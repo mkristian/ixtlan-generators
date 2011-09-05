@@ -1,0 +1,6 @@
+#-*- mode: ruby -*-
+
+gem 'ruby-maven', '0.8.3.0.3.0.28.3'
+gem 'ixtlan-generators', :path => '../..'
+
+# vim: syntax=Ruby
