@@ -3,7 +3,7 @@ require 'rails/generators/active_record'
 module ActiveRecord
   module Generators
     class ModelGenerator < Base
-      include ::Ixtlan::Core::Singleton
+      include ::Ixtlan::Generators::Singleton
 
       argument :attributes, :type => :array, :default => [], :banner => "field:type field:type"
 
