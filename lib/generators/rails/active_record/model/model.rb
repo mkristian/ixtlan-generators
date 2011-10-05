@@ -6,7 +6,8 @@ class <%= class_name %> < <%= parent_class_name.classify %>
   <%= attribute.type %> :<%= attribute.name %>
 <% end -%>
 <% if options[:modified_by] -%>
-  belongs_to :modified_by, :class_name => "<%= options[:user_model] %>"
+  belongs_to :modified_by, :class_name => "<%= options[:modified_by].classify %>"
+  validates :modified_by_id, :presence => true
 <% end -%>
 <% if options[:singleton] -%>
   def self.instance

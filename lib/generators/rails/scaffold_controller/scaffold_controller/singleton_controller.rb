@@ -1,5 +1,22 @@
 class <%= controller_class_name %>Controller < ApplicationController
  
+  before_filter :cleanup_params
+
+  private
+
+  def cleanup_params
+    # compensate the shortcoming of the incoming json/xml
+    model = params[:<%= singular_table_name %>] || []
+<% if options[:timestamps] -%>
+    model.delete :created_at
+<% unless options[:optmistic] -%>
+    model.delete :updated_at
+<% end -%>
+<% end -%>
+  end
+
+  public
+
   # GET <%= route_url %>
   # GET <%= route_url %>.xml
   # GET <%= route_url %>.json
@@ -25,7 +42,7 @@ class <%= controller_class_name %>Controller < ApplicationController
     @<%= singular_table_name %> = <%= class_name %>.instance
 <% orm_class.find(class_name)
    if options[:modified_by] -%>
-    @<%= singular_table_name %>.current_user = current_user
+    @<%= singular_table_name %>.modified_by = current_user
 <% end -%>
 
     respond_to do |format|

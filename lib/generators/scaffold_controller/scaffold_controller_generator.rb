@@ -6,6 +6,8 @@ module ScaffoldController
     class ScaffoldControllerGenerator < ::Rails::Generators::NamedBase
       include ::Rails::Generators::ResourceHelpers
 
+      argument :attributes, :type => :array, :default => [], :banner => "field:type field:type"
+
       check_class_collision :suffix => "Controller"
 
       class_option :orm, :banner => "NAME", :type => :string, :required => true,
@@ -13,6 +15,7 @@ module ScaffoldController
 
       class_option :singleton, :type => :boolean, :default => false
       class_option :optimistic, :type => :boolean, :default => false
+      class_option :modified_by, :type => :string
       class_option :timestamps, :type => :boolean, :default => true
 
       def create_controller_files

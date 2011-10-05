@@ -1,4 +1,25 @@
+<% field_names = attributes.select {|a| a.type == :belongs_to }.collect{ |a| a.name } -%>
+<% fields = ":" + field_names.join(", :") if field_names.size > 0 -%>
 class <%= controller_class_name %>Controller < ApplicationController
+
+  before_filter :cleanup_params
+
+  private
+
+  def cleanup_params
+    # compensate the shortcoming of the incoming json/xml
+    model = params[:<%= singular_table_name %>] || []
+    model.delete :id
+<% if options[:timestamps] -%>
+    model.delete :created_at
+<% unless options[:optimistic] -%>
+    model.delete :updated_at
+<% end -%>
+<% end -%>
+  end
+
+  public
+
   # GET <%= route_url %>
   # GET <%= route_url %>.xml
   # GET <%= route_url %>.json
@@ -21,7 +42,7 @@ class <%= controller_class_name %>Controller < ApplicationController
     respond_to do |format|
       format.html # show.html.erb
       format.xml  { render :xml => @<%= singular_table_name %> }
-      format.json  { render :json => @<%= singular_table_name %> }
+      format.json  { render :json => @<%= singular_table_name %><% if fields -%>.to_json(:methods => [<%= fields %>])<% end -%> }
     end
   end
 
@@ -41,14 +62,14 @@ class <%= controller_class_name %>Controller < ApplicationController
   def create
     @<%= singular_table_name %> = <%= orm_class.build(class_name, "params[:#{singular_table_name}]") %>
 <% if options[:modified_by] -%>
-    @<%= singular_table_name %>.current_user = current_user
+    @<%= singular_table_name %>.modified_by = current_user
 <% end -%>
 
     respond_to do |format|
       if @<%= orm_instance.save %>
         format.html { redirect_to(@<%= singular_table_name %>, :notice => '<%= human_name %> was successfully created.') }
         format.xml  { render :xml => @<%= singular_table_name %>, :status => :created, :location => @<%= singular_table_name %> }
-        format.json  { render :json => @<%= singular_table_name %>, :status => :created, :location => @<%= singular_table_name %> }
+        format.json  { render :json => @<%= singular_table_name %><% if fields -%>.to_json(:methods => [<%= fields %>])<% end -%>, :status => :created, :location => @<%= singular_table_name %> }
       else
         format.html { render :action => "new" }
         format.xml  { render :xml => @<%= orm_instance.errors %>, :status => :unprocessable_entity }
@@ -75,18 +96,17 @@ class <%= controller_class_name %>Controller < ApplicationController
     end
 <% else -%>
     @<%= singular_table_name %> = <%= orm_class.find(class_name, "params[:id]") %>
-    (params[:<%= singular_table_name %>]||[]).delete(:updated_at)
 <% end -%>
-    (params[:<%= singular_table_name %>]||[]).delete(:id)
 <% if options[:modified_by] -%>
-    @<%= singular_table_name %>.current_user = current_user
+    params[:<%= singular_table_name %>] ||= {}
+    params[:<%= singular_table_name %>][:modified_by] = current_user
 <% end -%>
 
     respond_to do |format|
       if @<%= orm_instance.update_attributes("params[:#{singular_table_name}]") %>
         format.html { redirect_to(@<%= singular_table_name %>, :notice => '<%= human_name %> was successfully updated.') }
         format.xml  { render :xml => @<%= singular_table_name %> }
-        format.json  { render :json => @<%= singular_table_name %> }
+        format.json  { render :json => @<%= singular_table_name %><% if fields -%>.to_json(:methods => [<%= fields %>])<% end -%> }
       else
         format.html { render :action => "edit" }
         format.xml  { render :xml => @<%= orm_instance.errors %>, :status => :unprocessable_entity }
@@ -113,9 +133,6 @@ class <%= controller_class_name %>Controller < ApplicationController
     end
 <% else -%>
     @<%= singular_table_name %> = <%= orm_class.find(class_name, "params[:id]") %>
-<% end -%>
-<% if options[:modified_by] -%>
-    @<%= singular_table_name %>.current_user = current_user
 <% end -%>
 
     @<%= orm_instance.destroy %>
