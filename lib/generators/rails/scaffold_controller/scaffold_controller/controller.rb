@@ -1,5 +1,3 @@
-<% field_names = attributes.select {|a| a.type == :belongs_to }.collect{ |a| a.name } -%>
-<% fields = ":" + field_names.join(", :") if field_names.size > 0 -%>
 class <%= controller_class_name %>Controller < ApplicationController
 
   before_filter :cleanup_params
@@ -12,8 +10,20 @@ class <%= controller_class_name %>Controller < ApplicationController
     model.delete :id
 <% if options[:timestamps] -%>
     model.delete :created_at
-<% unless options[:optimistic] -%>
-    model.delete :updated_at
+    <% if options[:optimistic] -%>params[:updated_at] = <% end -%>model.delete :updated_at
+<% if options[:optimistic] -%>
+  end
+
+  def stale?
+    if @<%= singular_table_name %>.nil?
+      @<%= singular_table_name %> = <%= orm_class.find(class_name, "params[:id]") %>
+      respond_to do |format|
+        format.html { render :action => "edit" }
+        format.xml  { render :xml => nil, :status => :conflict }
+        format.json  { render :json => nil, :status => :conflict }
+      end
+      true
+    end
 <% end -%>
 <% end -%>
   end
@@ -28,8 +38,8 @@ class <%= controller_class_name %>Controller < ApplicationController
 
     respond_to do |format|
       format.html # index.html.erb 
-      format.xml  { render :xml => @<%= plural_table_name %> }
-      format.json  { render :json => @<%= plural_table_name %> }
+      format.xml  { render :xml => @<%= plural_table_name %>.to_xml(<%= class_name %>.options) }
+      format.json  { render :json => @<%= plural_table_name %>.to_json(<%= class_name %>.options) }
     end
   end
 
@@ -41,8 +51,8 @@ class <%= controller_class_name %>Controller < ApplicationController
 
     respond_to do |format|
       format.html # show.html.erb
-      format.xml  { render :xml => @<%= singular_table_name %> }
-      format.json  { render :json => @<%= singular_table_name %><% if fields -%>.to_json(:methods => [<%= fields %>])<% end -%> }
+      format.xml  { render :xml => @<%= singular_table_name %>.to_xml(<%= class_name %>.single_options) }
+      format.json  { render :json => @<%= singular_table_name %>.to_json(<%= class_name %>.single_options) }
     end
   end
 
@@ -68,8 +78,8 @@ class <%= controller_class_name %>Controller < ApplicationController
     respond_to do |format|
       if @<%= orm_instance.save %>
         format.html { redirect_to(@<%= singular_table_name %>, :notice => '<%= human_name %> was successfully created.') }
-        format.xml  { render :xml => @<%= singular_table_name %>, :status => :created, :location => @<%= singular_table_name %> }
-        format.json  { render :json => @<%= singular_table_name %><% if fields -%>.to_json(:methods => [<%= fields %>])<% end -%>, :status => :created, :location => @<%= singular_table_name %> }
+        format.xml  { render :xml => @<%= singular_table_name %>.to_xml(<%= class_name %>.single_options), :status => :created, :location => @<%= singular_table_name %> }
+        format.json  { render :json => @<%= singular_table_name %>.to_json(<%= class_name %>.single_options), :status => :created, :location => @<%= singular_table_name %> }
       else
         format.html { render :action => "new" }
         format.xml  { render :xml => @<%= orm_instance.errors %>, :status => :unprocessable_entity }
@@ -83,21 +93,14 @@ class <%= controller_class_name %>Controller < ApplicationController
   # PUT <%= route_url %>/1.json
   def update
 <% if options[:optimistic] && options[:timestamps] -%>
-    @<%= singular_table_name %> = <%= orm_class.find(class_name, "(params[:#{singular_table_name}]||[]).delete(:updated_at), params[:id]").sub(/\.(get|find)/, '.optimistic_\1') %>
+    @<%= singular_table_name %> = <%= orm_class.find(class_name, "params[:updated_at], params[:id]").sub(/\.(get|find)/, '.optimistic_\1') %>
 
-    if @<%= singular_table_name %>.nil?
-      @<%= singular_table_name %> = <%= orm_class.find(class_name, "params[:id]") %>
-      respond_to do |format|
-        format.html { render :action => "edit" }
-        format.xml  { render :xml => nil, :status => :conflict }
-        format.json  { render :json => nil, :status => :conflict }
-      end
-      return
-    end
+    return if stale?
 <% else -%>
     @<%= singular_table_name %> = <%= orm_class.find(class_name, "params[:id]") %>
 <% end -%>
 <% if options[:modified_by] -%>
+
     params[:<%= singular_table_name %>] ||= {}
     params[:<%= singular_table_name %>][:modified_by] = current_user
 <% end -%>
@@ -105,8 +108,8 @@ class <%= controller_class_name %>Controller < ApplicationController
     respond_to do |format|
       if @<%= orm_instance.update_attributes("params[:#{singular_table_name}]") %>
         format.html { redirect_to(@<%= singular_table_name %>, :notice => '<%= human_name %> was successfully updated.') }
-        format.xml  { render :xml => @<%= singular_table_name %> }
-        format.json  { render :json => @<%= singular_table_name %><% if fields -%>.to_json(:methods => [<%= fields %>])<% end -%> }
+        format.xml  { render :xml => @<%= singular_table_name %>.to_xml(<%= class_name %>.single_options) }
+        format.json  { render :json => @<%= singular_table_name %>.to_json(<%= class_name %>.single_options) }
       else
         format.html { render :action => "edit" }
         format.xml  { render :xml => @<%= orm_instance.errors %>, :status => :unprocessable_entity }
@@ -120,17 +123,9 @@ class <%= controller_class_name %>Controller < ApplicationController
   # DELETE <%= route_url %>/1.json
   def destroy
 <% if options[:optimistic] && options[:timestamps] -%>
-    @<%= singular_table_name %> = <%= orm_class.find(class_name, "(params[:#{singular_table_name}]||[]).delete(:updated_at), params[:id]").sub(/\.(get|find)/, '.optimistic_\1') %>
+    @<%= singular_table_name %> = <%= orm_class.find(class_name, "params[:updated_at], params[:id]").sub(/\.(get|find)/, '.optimistic_\1') %>
 
-    if @<%= singular_table_name %>.nil?
-      @<%= singular_table_name %> = <%= orm_class.find(class_name, "params[:id]") %>
-      respond_to do |format|
-        format.html { render :action => "edit" }
-        format.xml  { render :xml => nil, :status => :conflict }
-        format.json  { render :json => nil, :status => :conflict }
-      end
-      return
-    end
+    return if stale?
 <% else -%>
     @<%= singular_table_name %> = <%= orm_class.find(class_name, "params[:id]") %>
 <% end -%>
