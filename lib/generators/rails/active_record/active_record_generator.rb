@@ -44,5 +44,5 @@ if defined?(Rails::Generators::ModelGenerator) && defined?(ActiveRecord)
   end
   
 else
-  raise "ignore this file"
+  raise LoadError.new "ignore this file #{__FILE__.sub(/.rb$/, '')}"
 end
