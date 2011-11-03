@@ -1,13 +1,13 @@
-require 'generators/ixtlan/configuration_base'
+require 'generators/ixtlan/audit_base'
 module Ixtlan
   module Generators
-    class ConfigurationModelGenerator < ConfigurationBase
-
+    class AuditScaffoldGenerator < AuditBase
+      
       source_root File.expand_path('../../templates', __FILE__)
       
       protected
       def generator_name
-        "model"
+        "scaffold"
       end
     end
   end

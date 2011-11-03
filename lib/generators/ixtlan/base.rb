@@ -5,40 +5,23 @@ module Ixtlan
 
       argument :name, :type => :string, :required => false
 
+      class_option :dynamic, :type => :boolean, :default => true
+
       protected
       def generator_name
         raise "please overwrite generator_name"
       end
 
+      def application_name
+        @application_name ||= Rails.application.class.to_s.gsub(/::/,'').sub(/Application$/, '')
+      end
+
       public
-      def create
-        args = []
-        if name
-          args << ARGV.shift
-        else
-          args << "configuration"
-        end
 
-        if defined? ::Ixtlan::Errors
-          args << "errors_keep_dump:integer"
-          args << "errors_dir:string"
-          args << "errors_from:string"
-          args << "errors_to:string"
+      def create_initializer_file
+        if options[:dynamic]
+          template 'dynamic.rb', File.join('config', "initializers", "ixtlan.rb")
         end
-
-        if defined? ::Ixtlan::Sessions
-          args << "idle_session_timeout:integer"
-        end
-
-        if defined? ::Ixtlan::Audit
-          args << "audit_keep_log:integer"
-        end
-        
-        args += ARGV[0, 10000] || []
-        
-        args << "--singleton"
-
-        generate generator_name, *args
       end
     end
   end

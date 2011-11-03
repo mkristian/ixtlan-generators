@@ -15,7 +15,7 @@ class <%= controller_class_name %>Controller < ApplicationController
 
   def stale?
     if @<%= singular_table_name %>.nil?
-      @<%= singular_table_name %> = <%= orm_class.find(class_name, "params[:id]") %>
+      @<%= singular_table_name %> = <%= class_name %>.instance
       respond_to do |format|
         format.html { render :action => "edit" }
         format.xml  { render :xml => nil, :status => :conflict }

@@ -1,7 +1,7 @@
 # -*- mode: ruby -*-
 Gem::Specification.new do |s|
   s.name = 'ixtlan-generators'
-  s.version = '0.2.0'
+  s.version = '0.1.3'
 
   s.summary = 'rails generator templates for ixtlan gems'
   s.description = s.summary
@@ -22,6 +22,7 @@ Gem::Specification.new do |s|
   s.test_files += Dir['features/*.feature']
   s.test_files += Dir['features/step_definitions/*.rb']
   s.add_development_dependency 'ixtlan-core', '~> 0.6'
+  s.add_development_dependency 'ixtlan-audit', '~> 0.2.0'
   s.add_development_dependency 'rails', '3.0.9'
   s.add_development_dependency 'rspec', '2.6.0'
   s.add_development_dependency 'cucumber', '0.9.4'

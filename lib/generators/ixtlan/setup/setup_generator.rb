@@ -5,15 +5,19 @@ module Ixtlan
 
       source_root File.expand_path('../templates', __FILE__)
 
+      protected
+
+      def application_name
+        @application_name ||= Rails.application.class.to_s.gsub(/::/,'').sub(/Application$/, '')
+      end
+
+      public
+
       def create_preinitializer_files
         template 'preinitializer.rb', File.join('config', "preinitializer.rb")
         template 'gitignore', File.join('config', ".gitignore")
-        template 'production.yml.example', File.join('config', "production.yml.example")
+        template 'passwords.yml.example', File.join('config', "passwords.yml.example")
         template 'database.yml.example', File.join('config', "database.yml.example")
-      end
-      
-      def create_initializer_file
-        template 'initializer.rb', File.join('config', "initializers", "ixtlan.rb")
       end
     
       # TODO make only if template-engine is ERB

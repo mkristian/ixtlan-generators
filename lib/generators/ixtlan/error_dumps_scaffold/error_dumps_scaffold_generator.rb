@@ -1,13 +1,13 @@
-require 'generators/ixtlan/configuration_base'
+require 'generators/ixtlan/error_dumps_base'
 module Ixtlan
   module Generators
-    class ConfigurationModelGenerator < ConfigurationBase
-
+    class ErrorDumpsScaffoldGenerator < ErrorDumpsBase
+      
       source_root File.expand_path('../../templates', __FILE__)
       
       protected
       def generator_name
-        "model"
+        "scaffold"
       end
     end
   end
