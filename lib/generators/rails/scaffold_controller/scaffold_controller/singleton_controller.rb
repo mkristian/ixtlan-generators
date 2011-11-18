@@ -65,6 +65,7 @@ class <%= controller_class_name %>Controller < ApplicationController
 <% end -%>
 
     respond_to do |format|
+<%  orm_class # to set inner state - upstream bug -%>
       if @<%= orm_instance.update_attributes("params[:#{singular_table_name}]") %>
         format.html { redirect_to(<%= singular_table_name %>_path, :notice => '<%= human_name %> was successfully updated.') }
         format.xml  { render :xml => @<%= singular_table_name %>.to_xml(<%= class_name %>.single_options) }
