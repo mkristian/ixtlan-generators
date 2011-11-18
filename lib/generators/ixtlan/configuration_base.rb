@@ -28,7 +28,7 @@ module Ixtlan
         
         args += ARGV
         
-        args << "--singleton --timestamps"
+        args += ["--singleton", "--timestamps"]
 
         generate generator_name, *args
       end

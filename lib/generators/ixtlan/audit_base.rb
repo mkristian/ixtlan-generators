@@ -11,12 +11,16 @@ module Ixtlan
           args << "audit"
         end
 
-        args << 'login:string message:string'
+        args += ['login:string', 'message:string']
         args += ARGV
         
-        args << "--read-only --timestamps"
+        args += ["--read-only", "--timestamps"]
 
         generate generator_name, *args
+      end
+
+      def add_gem
+        gem 'ixtlan-audit' unless File.read('Gemfile') =~ /gem\s['"]ixtlan-audit['"]/
       end
     end
   end
