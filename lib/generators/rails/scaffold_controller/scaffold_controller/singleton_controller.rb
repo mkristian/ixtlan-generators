@@ -9,7 +9,7 @@ class <%= controller_class_name %>Controller < ApplicationController
     model = params[:<%= singular_table_name %>] || []
 <% if options[:timestamps] -%>
     model.delete :created_at
-    <% if options[:optimistic] -%>params[:updated_at] = <% end -%>model.delete :updated_at
+    <% if options[:optimistic] -%>params[:updated_at] ||= <% end -%>model.delete :updated_at
 <% if options[:optimistic] -%>
   end
 

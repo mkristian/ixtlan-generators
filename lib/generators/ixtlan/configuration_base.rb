@@ -32,6 +32,10 @@ module Ixtlan
 
         generate generator_name, *args
       end
+
+      def create_seed
+        template 'seed.rb', File.join('db', 'seed.rb')
+      end
     end
   end
 end

@@ -3,7 +3,7 @@ class <%= class_name %> < <%= parent_class_name.classify %>
   belongs_to :<%= attribute.name %>
 <% end -%>
 <% attributes.select {|attr| [:has_one, :has_many].include?(attr.type) }.each do |attribute| -%>
-  <%= attribute.type %> :<%= attribute.name %>
+  <%= attribute.type %> :<%= attribute.name.singularize %>
 <% end -%>
 <% if options[:modified_by] -%>
   belongs_to :modified_by, :class_name => "User"
@@ -19,8 +19,11 @@ class <%= class_name %> < <%= parent_class_name.classify %>
   def self.options
     {
 <% except = []
-    except = [:created_at, :updated_at] if options[:timestamps]
-    except << :modified_by_id if options[:modified_by] -%>
+   if options[:timestamps]
+     except = [:created_at]
+     except << :updated_at unless options[:optimistic]
+   end
+   except << :modified_by_id if options[:modified_by] -%>
       :except => <%= except.inspect %>
     }
   end

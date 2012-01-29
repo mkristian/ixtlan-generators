@@ -10,7 +10,7 @@ class <%= controller_class_name %>Controller < ApplicationController
     model.delete :id
 <% if options[:timestamps] -%>
     model.delete :created_at
-    <% if options[:optimistic] -%>params[:updated_at] = <% end -%>model.delete :updated_at
+    <% if options[:optimistic] -%>params[:updated_at] ||= <% end -%>model.delete :updated_at
 <% if options[:optimistic] -%>
   end
 
