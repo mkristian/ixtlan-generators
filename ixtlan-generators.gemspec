@@ -1,7 +1,7 @@
 # -*- mode: ruby -*-
 Gem::Specification.new do |s|
   s.name = 'ixtlan-generators'
-  s.version = '0.1.7'
+  s.version = '0.1.8'
 
   s.summary = 'rails generator templates for ixtlan gems'
   s.description = s.summary
